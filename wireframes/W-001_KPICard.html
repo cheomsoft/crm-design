@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>W-001 KPICard — 와이어프레임</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #F7F8FB;        --card: #FFFFFF;       --border: #E5E7EB;
+      --text: #0F172A;      --text-2: #334155;     --text-3: #64748B;
+      --blue: #2563EB;      --blue-soft: #EFF4FF;  --blue-strong: #1D4ED8;
+      --green: #16A34A;     --green-soft: #F0FDF4;
+      --red: #DC2626;       --red-soft: #FEF2F2;
+      --amber: #D97706;     --amber-soft: #FFFBEB;
+      --skeleton-base: #E5E7EB;  --skeleton-highlight: #F1F5F9;
+      --radius-sm: 6px; --radius: 8px; --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
+      --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+      --duration-fast: 120ms;
+      --duration-base: 200ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    :root[data-theme="dark"] {
+      --bg: #0B1220; --card: #1E293B; --border: #334155;
+      --text: #F1F5F9; --text-2: #CBD5E1; --text-3: #94A3B8;
+      --blue: #3B82F6; --blue-soft: rgba(59,130,246,0.18); --blue-strong: #60A5FA;
+      --green: #22C55E; --green-soft: rgba(34,197,94,0.18);
+      --red: #EF4444; --red-soft: rgba(239,68,68,0.18);
+      --amber: #F59E0B; --amber-soft: rgba(245,158,11,0.18);
+      --skeleton-base: #1E293B; --skeleton-highlight: #334155;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0B1220; --card: #1E293B; --border: #334155;
+        --text: #F1F5F9; --text-2: #CBD5E1; --text-3: #94A3B8;
+        --blue: #3B82F6; --blue-soft: rgba(59,130,246,0.18); --blue-strong: #60A5FA;
+        --green: #22C55E; --green-soft: rgba(34,197,94,0.18);
+        --red: #EF4444; --red-soft: rgba(239,68,68,0.18);
+        --amber: #F59E0B; --amber-soft: rgba(245,158,11,0.18);
+        --skeleton-base: #1E293B; --skeleton-highlight: #334155;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px;
+      background: var(--bg); color: var(--text);
+      font-family: 'Pretendard', system-ui, sans-serif;
+      font-size: 14px; line-height: 1.5;
+      font-feature-settings: 'tnum';
+    }
+    h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .sub { color: var(--text-3); font-size: 13px; margin-bottom: 24px; }
+    .section {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 20px;
+      margin-bottom: 16px; box-shadow: var(--shadow-sm);
+    }
+    .section-title { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+    .section-sub { color: var(--text-3); font-size: 12px; margin-bottom: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .grid-1 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (max-width: 1280px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 540px) { .grid-4, .grid-2 { grid-template-columns: 1fr; } }
+
+    /* W-001 KPICard 핵심 — 명세서 §3.2 그대로 */
+    .kpi {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--blue);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--duration-base) var(--ease-out),
+                  box-shadow var(--duration-base) var(--ease-out);
+    }
+    .kpi.clickable { cursor: pointer; }
+    .kpi.clickable:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .kpi.clickable:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+    /* Tone — §3.3 */
+    .kpi.tone-blue { border-left-color: var(--blue); }
+    .kpi.tone-green { border-left-color: var(--green); }
+    .kpi.tone-red { border-left-color: var(--red); }
+    .kpi.tone-amber { border-left-color: var(--amber); }
+
+    .kpi-head {
+      display: flex; align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .kpi-label {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-3);
+      flex: 1; min-width: 0;
+    }
+    .kpi-icon {
+      width: 32px; height: 32px;
+      border-radius: var(--radius);
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .kpi-icon.tone-blue { background: var(--blue-soft); color: var(--blue); }
+    .kpi-icon.tone-green { background: var(--green-soft); color: var(--green); }
+    .kpi-icon.tone-red { background: var(--red-soft); color: var(--red); }
+    .kpi-icon.tone-amber { background: var(--amber-soft); color: var(--amber); }
+    .kpi-value {
+      font-size: 26px; font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      margin: 0;
+    }
+    .kpi-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+    .kpi-delta {
+      display: inline-flex; align-items: center; gap: 2px;
+      font-size: 11px; font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 999px;
+    }
+    .kpi-delta.up { background: var(--green-soft); color: var(--green); }
+    .kpi-delta.down { background: var(--red-soft); color: var(--red); }
+
+    /* Loading state — Skeleton (W-099 inline) */
+    .skeleton {
+      background: linear-gradient(90deg, var(--skeleton-base) 0%, var(--skeleton-highlight) 50%, var(--skeleton-base) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton { animation: none; background: var(--skeleton-base); }
+    }
+
+    /* Error state */
+    .kpi.state-error { border-color: var(--red); }
+    .kpi-error-msg { color: var(--red); font-size: 12px; margin-bottom: 4px; }
+    .kpi-retry {
+      background: none; border: none; padding: 0;
+      color: var(--blue); font-size: 12px; font-weight: 600;
+      cursor: pointer; text-decoration: underline;
+      font-family: inherit;
+    }
+
+    @media (max-width: 540px) {
+      .kpi-value { font-size: 20px; }
+    }
+
+    /* Mini topbar (theme/lang) */
+    .topbar {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .topbar-spacer { flex: 1; }
+    .toggle {
+      display: inline-flex; gap: 2px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2px;
+      background: var(--card);
+    }
+    .toggle button {
+      background: none; border: none;
+      padding: 5px 10px; font-size: 12px; font-weight: 600;
+      color: var(--text-3); cursor: pointer; border-radius: 5px;
+      font-family: inherit;
+    }
+    .toggle button.active { background: var(--blue-soft); color: var(--blue); }
+    .toggle button.icon-btn { width: 28px; padding: 5px; display: grid; place-items: center; }
+
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; background: var(--blue-soft); color: var(--blue); padding: 1px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1 style="margin:0;font-size:20px">W-001 KPICard — 와이어프레임</h1>
+    <div class="topbar-spacer"></div>
+    <div class="toggle" role="radiogroup" aria-label="Language">
+      <button class="active" data-lang="ko">한국어</button>
+      <button data-lang="en">English</button>
+    </div>
+    <div class="toggle" role="radiogroup" aria-label="Theme">
+      <button class="icon-btn" data-mode="light" aria-label="Light">☀</button>
+      <button class="icon-btn active" data-mode="system" aria-label="System">⚙</button>
+      <button class="icon-btn" data-mode="dark" aria-label="Dark">🌙</button>
+    </div>
+  </div>
+  <p class="sub">명세: <code>docs/10_widgets/W-001_KPICard.md</code> · 의존: W-098 Icon, W-099 Skeleton · 사용처: P-001 사업부 대시보드 KPI 그리드</p>
+
+  <!-- 3.1 Success — 4 tone -->
+  <div class="section">
+    <h2 class="section-title">3.3 Variants — Success 상태 4 tone</h2>
+    <p class="section-sub">tone="blue|green|red|amber" — 좌측 2px 보더 + 아이콘 박스 색</p>
+    <div class="grid-4">
+      <button class="kpi tone-blue clickable" role="region" aria-label="당월 예정 수금">
+        <div class="kpi-head">
+          <div class="kpi-label">당월 예정 수금</div>
+          <div class="kpi-icon tone-blue">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 12h.01"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value" aria-live="polite">1억 2,500만원</div>
+        <div class="kpi-sub">2026년 5월 <span class="kpi-delta up">↑ 5.2%</span></div>
+      </button>
+      <div class="kpi tone-green" role="region" aria-label="전월 수금 완료">
+        <div class="kpi-head">
+          <div class="kpi-label">전월 수금 완료</div>
+          <div class="kpi-icon tone-green">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value" aria-live="polite">8억 4,000만원</div>
+        <div class="kpi-sub">2026년 4월 <span class="kpi-delta up">↑ 12%</span></div>
+      </div>
+      <div class="kpi tone-red" role="region" aria-label="지연 수금">
+        <div class="kpi-head">
+          <div class="kpi-label">지연 수금</div>
+          <div class="kpi-icon tone-red">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value" aria-live="polite">2억 1,000만원</div>
+        <div class="kpi-sub">12건 지연 <span class="kpi-delta down">↓ 3.1%</span></div>
+      </div>
+      <div class="kpi tone-amber" role="region" aria-label="익월 예정">
+        <div class="kpi-head">
+          <div class="kpi-label">익월 예정</div>
+          <div class="kpi-icon tone-amber">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value" aria-live="polite">9억 8,000만원</div>
+        <div class="kpi-sub">2026년 6월</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3.4 States -->
+  <div class="section">
+    <h2 class="section-title">3.4 States — Loading / Empty / Error / Success</h2>
+    <p class="section-sub">상태별 분기 (loading 우선 → error → empty → success)</p>
+    <div class="grid-4">
+      <div class="kpi tone-blue state-loading" role="region" aria-label="로딩 중" aria-busy="true">
+        <div class="kpi-head">
+          <div class="kpi-label">당월 예정 수금</div>
+          <div class="kpi-icon tone-blue"></div>
+        </div>
+        <div><span class="skeleton" style="width:160px;height:32px"></span></div>
+        <div style="margin-top:8px"><span class="skeleton" style="width:80px;height:14px"></span></div>
+      </div>
+      <div class="kpi tone-blue state-empty" role="region" aria-label="데이터 없음">
+        <div class="kpi-head">
+          <div class="kpi-label">당월 예정 수금</div>
+          <div class="kpi-icon tone-blue">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 12h.01"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value" aria-live="polite">—</div>
+        <div class="kpi-sub">데이터 없음</div>
+      </div>
+      <div class="kpi state-error" role="region" aria-label="불러오기 실패">
+        <div class="kpi-head">
+          <div class="kpi-label">당월 예정 수금</div>
+          <div class="kpi-icon tone-red">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+        </div>
+        <div class="kpi-error-msg">불러오기 실패</div>
+        <button class="kpi-retry">재시도</button>
+      </div>
+      <div class="kpi tone-blue" role="region" aria-label="당월 예정 수금">
+        <div class="kpi-head">
+          <div class="kpi-label">당월 예정 수금</div>
+          <div class="kpi-icon tone-blue">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 12h.01"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value">1억 2,500만원</div>
+        <div class="kpi-sub">2026년 5월</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3.6 Responsive -->
+  <div class="section">
+    <h2 class="section-title">3.6 Responsive — 그리드 변형</h2>
+    <p class="section-sub">≥ 1280px: 4열 / 768~1279: 2열 / &lt; 540: 1열 + 폰트 26px → 20px</p>
+    <div class="sub" style="font-size:11px;color:var(--text-3);margin-bottom:8px">현재 viewport: <span id="vp"></span>px → 위 4-col 그리드가 자동 변형됨</div>
+    <p class="sub" style="font-size:12px">브라우저 창 크기 조절하여 확인</p>
+  </div>
+
+  <!-- a11y -->
+  <div class="section">
+    <h2 class="section-title">3.7 Accessibility 점검</h2>
+    <ul style="margin:0;padding-left:20px;font-size:13px;color:var(--text-2)">
+      <li><code>role="region"</code> + <code>aria-label="{label}"</code> — 카드별 영역 구분</li>
+      <li><code>aria-live="polite"</code> — value 변경 시 스크린리더 통지</li>
+      <li>색상 + 아이콘 + 텍스트 (delta 화살표) — 색맹 대응</li>
+      <li>Loading: <code>aria-busy="true"</code> + Skeleton 의 <code>role="status"</code></li>
+      <li>onClick 시 키보드 Tab 포커스 + Enter/Space 트리거 (focus-visible 링)</li>
+    </ul>
+  </div>
+
+  <script>
+    function setVp() { document.getElementById('vp').textContent = window.innerWidth; }
+    setVp(); window.addEventListener('resize', setVp);
+    document.querySelectorAll('.toggle [data-mode]').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('.toggle [data-mode]').forEach(x => x.classList.toggle('active', x === b));
+      const m = b.dataset.mode;
+      if (m === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', m);
+        localStorage.setItem('theme', m);
+      }
+    }));
+    document.querySelectorAll('.toggle [data-lang]').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('.toggle [data-lang]').forEach(x => x.classList.toggle('active', x === b));
+    }));
+  </script>
+</body>
+</html>
