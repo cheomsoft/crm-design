@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>테마 + 언어 전환 패턴 — 와이어프레임</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    })();
+  </script>
+  <style>
+    /* 라이트 (기본) */
+    :root {
+      --bg: #F7F8FB;
+      --card: #FFFFFF;
+      --border: #E5E7EB;
+      --text: #0F172A;
+      --text-2: #334155;
+      --text-3: #64748B;
+      --blue: #2563EB;
+      --blue-soft: #EFF4FF;
+      --blue-strong: #1D4ED8;
+      --green: #16A34A;
+      --green-soft: #F0FDF4;
+      --red: #DC2626;
+      --red-soft: #FEF2F2;
+      --amber: #D97706;
+      --amber-soft: #FFFBEB;
+      --skeleton-base: #E5E7EB;
+      --skeleton-highlight: #F1F5F9;
+      --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
+      --radius: 8px;
+      --radius-lg: 12px;
+      --duration-base: 200ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* 사용자가 명시 다크 */
+    :root[data-theme="dark"] {
+      --bg: #0B1220;
+      --card: #1E293B;
+      --border: #334155;
+      --text: #F1F5F9;
+      --text-2: #CBD5E1;
+      --text-3: #94A3B8;
+      --blue: #3B82F6;
+      --blue-soft: rgba(59,130,246,0.18);
+      --blue-strong: #60A5FA;
+      --green: #22C55E;
+      --green-soft: rgba(34,197,94,0.18);
+      --red: #EF4444;
+      --red-soft: rgba(239,68,68,0.18);
+      --amber: #F59E0B;
+      --amber-soft: rgba(245,158,11,0.18);
+      --skeleton-base: #1E293B;
+      --skeleton-highlight: #334155;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* 시스템 자동 (사용자가 light 명시하지 않은 경우) */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0B1220;
+        --card: #1E293B;
+        --border: #334155;
+        --text: #F1F5F9;
+        --text-2: #CBD5E1;
+        --text-3: #94A3B8;
+        --blue: #3B82F6;
+        --blue-soft: rgba(59,130,246,0.18);
+        --blue-strong: #60A5FA;
+        --green: #22C55E;
+        --green-soft: rgba(34,197,94,0.18);
+        --red: #EF4444;
+        --red-soft: rgba(239,68,68,0.18);
+        --amber: #F59E0B;
+        --amber-soft: rgba(245,158,11,0.18);
+        --skeleton-base: #1E293B;
+        --skeleton-highlight: #334155;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: background var(--duration-base) var(--ease-out), color var(--duration-base) var(--ease-out);
+    }
+
+    /* Topbar (스위처 위치) */
+    .topbar {
+      height: 56px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-title { font-size: 15px; font-weight: 600; }
+    .spacer { flex: 1; }
+
+    /* Lang Switcher */
+    .lang-switcher {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2px;
+      background: var(--card);
+    }
+    .lang-btn {
+      background: none;
+      border: none;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-3);
+      cursor: pointer;
+      border-radius: 6px;
+      font-family: inherit;
+    }
+    .lang-btn.active {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+    .lang-btn:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 1px;
+    }
+
+    /* Theme Toggle (3-state segmented) */
+    .theme-toggle {
+      display: inline-flex;
+      gap: 2px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2px;
+      background: var(--card);
+    }
+    .theme-btn {
+      width: 32px; height: 28px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      display: grid; place-items: center;
+      color: var(--text-3);
+    }
+    .theme-btn.active { background: var(--blue-soft); color: var(--blue); }
+    .theme-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+    /* 본문 */
+    .container { max-width: 1080px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .sub { color: var(--text-3); font-size: 13px; margin-bottom: 24px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--blue);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    .kpi.green { border-left-color: var(--green); }
+    .kpi.red { border-left-color: var(--red); }
+    .kpi.amber { border-left-color: var(--amber); }
+    .kpi-label { font-size: 12px; color: var(--text-3); }
+    .kpi-value { font-size: 26px; font-weight: 700; margin-top: 6px; font-feature-settings: 'tnum'; color: var(--text); }
+    .kpi-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .panel-title { font-size: 13px; font-weight: 600; margin: 0 0 8px; }
+    .log {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      max-height: 160px;
+      overflow-y: auto;
+      color: var(--text-2);
+    }
+    .log-entry { padding: 2px 0; }
+    .log-entry.theme { color: var(--blue); }
+    .log-entry.lang { color: var(--green); }
+
+    /* Skeleton 다크 호환 */
+    .skeleton {
+      display: inline-block;
+      background: linear-gradient(90deg, var(--skeleton-base) 0%, var(--skeleton-highlight) 50%, var(--skeleton-base) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton { animation: none; background: var(--skeleton-base); }
+      body { transition: none; }
+    }
+
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; background: var(--blue-soft); color: var(--blue); padding: 1px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <span class="topbar-title" data-i18n="topbar.title">테마 + 언어 전환 패턴</span>
+    <div class="spacer"></div>
+
+    <div class="lang-switcher" role="radiogroup" aria-label="언어 선택">
+      <button class="lang-btn" data-lang="ko" role="radio" aria-checked="true">한국어</button>
+      <button class="lang-btn" data-lang="en" role="radio" aria-checked="false">English</button>
+    </div>
+
+    <div class="theme-toggle" role="radiogroup" aria-label="테마 선택">
+      <button class="theme-btn" data-mode="light" role="radio" aria-checked="false" aria-label="라이트 모드">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+      <button class="theme-btn" data-mode="system" role="radio" aria-checked="true" aria-label="시스템 자동">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+      </button>
+      <button class="theme-btn" data-mode="dark" role="radio" aria-checked="false" aria-label="다크 모드">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 data-i18n="page.title">테마 + 언어 전환 패턴</h1>
+    <p class="sub" data-i18n="page.sub">우상단 토글로 라이트/다크/시스템 + KO/EN 전환. 변경 즉시 반영 + localStorage 저장.</p>
+
+    <div class="grid">
+      <div class="kpi">
+        <div class="kpi-label" data-i18n="kpi.collection.thisMonth">당월 수금</div>
+        <div class="kpi-value">1.25<span data-i18n="unit.억">억</span></div>
+        <div class="kpi-sub" data-i18n="kpi.sub.may2026">2026년 5월</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-label" data-i18n="kpi.collection.completed">전월 완료</div>
+        <div class="kpi-value">8.4<span data-i18n="unit.억">억</span></div>
+        <div class="kpi-sub" data-i18n="kpi.sub.april2026">2026년 4월</div>
+      </div>
+      <div class="kpi red">
+        <div class="kpi-label" data-i18n="kpi.collection.delayed">지연</div>
+        <div class="kpi-value">2.1<span data-i18n="unit.억">억</span></div>
+        <div class="kpi-sub" data-i18n="kpi.sub.delayed.count">12건 지연</div>
+      </div>
+      <div class="kpi amber">
+        <div class="kpi-label" data-i18n="kpi.collection.pending">미정</div>
+        <div class="kpi-value"><span class="skeleton" style="width:80px;height:30px"></span></div>
+        <div class="kpi-sub" data-i18n="kpi.loading">집계 중…</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title" data-i18n="panel.systemStatus">현재 상태</h2>
+      <div style="font-size:13px;color:var(--text-2)">
+        테마 모드: <code id="theme-state">system</code> &nbsp;·&nbsp;
+        시스템 환경: <code id="system-pref">감지중...</code> &nbsp;·&nbsp;
+        실제 적용: <code id="applied-theme">light</code> &nbsp;·&nbsp;
+        언어: <code id="lang-state">ko</code>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title" data-i18n="panel.eventLog">이벤트 로그</h2>
+      <div class="log" id="log"><div class="log-entry">대기 중…</div></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title" data-i18n="panel.tokens">토큰 매핑 (라이브)</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;font-size:12px;font-family:ui-monospace,monospace">
+        <div>--bg = <span id="tk-bg" style="display:inline-block;width:14px;height:14px;border:1px solid var(--border);vertical-align:middle"></span></div>
+        <div>--card = <span id="tk-card" style="display:inline-block;width:14px;height:14px;border:1px solid var(--border);vertical-align:middle"></span></div>
+        <div>--text = <span id="tk-text" style="display:inline-block;width:14px;height:14px;border:1px solid var(--border);vertical-align:middle"></span></div>
+        <div>--blue = <span id="tk-blue" style="display:inline-block;width:14px;height:14px;border:1px solid var(--border);vertical-align:middle"></span></div>
+        <div>--green = <span id="tk-green" style="display:inline-block;width:14px;height:14px;border:1px solid var(--border);vertical-align:middle"></span></div>
+        <div>--red = <span id="tk-red" style="display:inline-block;width:14px;height:14px;border:1px solid var(--border);vertical-align:middle"></span></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // 간이 i18n (실제 구현은 react-i18next)
+    const LOCALE = {
+      ko: {
+        'topbar.title': '테마 + 언어 전환 패턴',
+        'page.title': '테마 + 언어 전환 패턴',
+        'page.sub': '우상단 토글로 라이트/다크/시스템 + KO/EN 전환. 변경 즉시 반영 + localStorage 저장.',
+        'kpi.collection.thisMonth': '당월 수금',
+        'kpi.collection.completed': '전월 완료',
+        'kpi.collection.delayed': '지연',
+        'kpi.collection.pending': '미정',
+        'kpi.sub.may2026': '2026년 5월',
+        'kpi.sub.april2026': '2026년 4월',
+        'kpi.sub.delayed.count': '12건 지연',
+        'kpi.loading': '집계 중…',
+        'unit.억': '억',
+        'panel.systemStatus': '현재 상태',
+        'panel.eventLog': '이벤트 로그',
+        'panel.tokens': '토큰 매핑 (라이브)',
+      },
+      en: {
+        'topbar.title': 'Theme + Language Switcher',
+        'page.title': 'Theme + Language Switcher Pattern',
+        'page.sub': 'Toggle light/dark/system + KO/EN. Instant + persisted in localStorage.',
+        'kpi.collection.thisMonth': 'Collection This Month',
+        'kpi.collection.completed': 'Last Month Completed',
+        'kpi.collection.delayed': 'Delayed',
+        'kpi.collection.pending': 'Pending',
+        'kpi.sub.may2026': 'May 2026',
+        'kpi.sub.april2026': 'April 2026',
+        'kpi.sub.delayed.count': '12 delayed',
+        'kpi.loading': 'Aggregating…',
+        'unit.억': 'B',  // 억 KRW ≈ 100M (검수 후 환산 정책 결정)
+        'panel.systemStatus': 'Current State',
+        'panel.eventLog': 'Event Log',
+        'panel.tokens': 'Token Mapping (live)',
+      }
+    };
+
+    function getCurrentLang() { return localStorage.getItem('lang') || 'ko'; }
+    function setCurrentLang(l) { localStorage.setItem('lang', l); applyLang(l); }
+    function applyLang(l) {
+      document.documentElement.setAttribute('lang', l);
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        el.textContent = LOCALE[l][key] || key;
+      });
+      document.querySelectorAll('.lang-btn').forEach(b => {
+        const active = b.dataset.lang === l;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-checked', active);
+      });
+      document.getElementById('lang-state').textContent = l;
+      log(`LANG → ${l}`, 'lang');
+    }
+
+    function getCurrentMode() { return localStorage.getItem('theme') || 'system'; }
+    function setMode(m) {
+      if (m === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('theme');
+        // 명시적 system 표시 위해 별도 키 사용
+        localStorage.setItem('theme', 'system');
+      } else {
+        document.documentElement.setAttribute('data-theme', m);
+        localStorage.setItem('theme', m);
+      }
+      applyMode(m);
+    }
+    function applyMode(m) {
+      document.querySelectorAll('.theme-btn').forEach(b => {
+        const active = b.dataset.mode === m;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-checked', active);
+      });
+      document.getElementById('theme-state').textContent = m;
+      const isDark = m === 'dark' || (m === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.getElementById('applied-theme').textContent = isDark ? 'dark' : 'light';
+      updateTokenSwatches();
+      log(`THEME → ${m} (applied: ${isDark ? 'dark' : 'light'})`, 'theme');
+    }
+    function updateTokenSwatches() {
+      const cs = getComputedStyle(document.documentElement);
+      ['bg','card','text','blue','green','red'].forEach(t => {
+        const el = document.getElementById('tk-' + t);
+        if (el) el.style.background = cs.getPropertyValue('--' + t).trim();
+      });
+    }
+
+    function log(msg, cls = '') {
+      const e = document.createElement('div');
+      e.className = 'log-entry ' + cls;
+      const t = new Date().toLocaleTimeString();
+      e.textContent = `[${t}] ${msg}`;
+      document.getElementById('log').prepend(e);
+    }
+
+    // 이벤트
+    document.querySelectorAll('.lang-btn').forEach(b =>
+      b.addEventListener('click', () => setCurrentLang(b.dataset.lang))
+    );
+    document.querySelectorAll('.theme-btn').forEach(b =>
+      b.addEventListener('click', () => setMode(b.dataset.mode))
+    );
+
+    // 시스템 환경 감지
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    document.getElementById('system-pref').textContent = mq.matches ? 'dark' : 'light';
+    mq.addEventListener('change', e => {
+      document.getElementById('system-pref').textContent = e.matches ? 'dark' : 'light';
+      if (getCurrentMode() === 'system') applyMode('system');
+      log(`SYSTEM PREF → ${e.matches ? 'dark' : 'light'}`, 'theme');
+    });
+
+    // 초기화
+    applyLang(getCurrentLang());
+    applyMode(getCurrentMode());
+  </script>
+</body>
+</html>
