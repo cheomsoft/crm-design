@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>모바일 반응형 드로어 패턴 — 와이어프레임</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --card: #FFFFFF;
+      --border: #E5E7EB;
+      --text: #0F172A;
+      --text-2: #334155;
+      --text-3: #64748B;
+      --blue: #2563EB;
+      --blue-soft: #EFF4FF;
+      --red: #DC2626;
+      --red-soft: #FEF2F2;
+      --green: #16A34A;
+      --green-soft: #F0FDF4;
+      --amber: #D97706;
+      --sidebar-bg: #0F172A;
+      --sidebar-text: #E2E8F0;
+      --sidebar-active: #1E293B;
+      --sidebar-accent: #3B82F6;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --duration-base: 200ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .sub { color: var(--text-3); font-size: 13px; margin-bottom: 16px; }
+
+    .device-row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+
+    .phone {
+      width: 375px;
+      height: 720px;
+      border: 8px solid #1F2937;
+      border-radius: 32px;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(15,23,42,0.15);
+    }
+    .phone .topbar {
+      height: 48px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .icon-btn {
+      width: 36px; height: 36px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: white;
+      display: grid; place-items: center;
+      cursor: pointer;
+    }
+    .topbar-title { font-size: 14px; font-weight: 600; }
+    .phone .body {
+      padding: 16px;
+      height: calc(100% - 48px);
+      overflow-y: auto;
+    }
+    .body.locked { overflow: hidden; }
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--blue);
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      margin-bottom: 8px;
+    }
+    .kpi-label { font-size: 11px; color: var(--text-3); }
+    .kpi-value { font-size: 18px; font-weight: 700; margin-top: 4px; font-feature-settings: 'tnum'; }
+
+    /* 사이드바 */
+    .sidebar {
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 280px;
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      transform: translateX(-100%);
+      transition: transform var(--duration-base) var(--ease-out);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #1F2937;
+    }
+    .sidebar-brand {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+      display: grid; place-items: center;
+      color: white; font-weight: 700; font-size: 11px;
+    }
+    .sidebar-title { font-weight: 700; color: white; font-size: 13px; }
+    .sidebar-close {
+      margin-left: auto;
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: transparent;
+      border: 1px solid #1F2937;
+      color: var(--sidebar-text);
+      cursor: pointer;
+      display: grid; place-items: center;
+    }
+    .nav-section { padding: 8px 4px; }
+    .nav-section-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94A3B8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      margin: 1px 4px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: var(--sidebar-text);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      width: calc(100% - 8px);
+      text-align: left;
+    }
+    .nav-item:hover, .nav-item:focus-visible { background: #1F2937; outline: none; }
+    .nav-item.active { background: var(--sidebar-active); color: white; font-weight: 600; }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; width: 3px; height: 24px;
+      background: var(--sidebar-accent);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* Scrim */
+    .scrim {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 49;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--duration-base) var(--ease-out);
+    }
+    .scrim.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sidebar, .scrim { transition: none; }
+    }
+
+    /* 컨트롤 패널 */
+    .panel {
+      flex: 1;
+      min-width: 280px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+    .panel h2 { font-size: 14px; margin: 0 0 8px; }
+    .panel ul { padding-left: 20px; margin: 0 0 12px; }
+    .panel li { font-size: 13px; color: var(--text-2); margin-bottom: 4px; }
+    .badge-ok { background: var(--green-soft); color: var(--green); padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge-bad { background: var(--red-soft); color: var(--red); padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .log {
+      background: #F1F5F9;
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      color: var(--text-2);
+      max-height: 160px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+    .log-entry { padding: 2px 0; }
+    .log-entry.trigger { color: var(--blue); }
+    .log-entry.state { color: var(--green); }
+  </style>
+</head>
+<body>
+  <h1>모바일 반응형 드로어 패턴</h1>
+  <p class="sub">표준 4종 닫기 트리거 + 접근성 + reduced-motion 데모. 명세: <code>docs/00_architecture/05_RESPONSIVE_DRAWER.md</code></p>
+
+  <div class="device-row">
+    <div class="phone" id="phone">
+      <div class="topbar">
+        <button class="icon-btn" id="hamburger" aria-label="메뉴 열기" aria-expanded="false" aria-controls="sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="topbar-title">IT사업부 통합</span>
+      </div>
+      <div class="body" id="body">
+        <div class="kpi"><div class="kpi-label">전월 통합 수금</div><div class="kpi-value">8.4억</div></div>
+        <div class="kpi"><div class="kpi-label">당월 통합 예정</div><div class="kpi-value">12.5억</div></div>
+        <div class="kpi"><div class="kpi-label">익월 통합 예정</div><div class="kpi-value">9.8억</div></div>
+        <div class="kpi"><div class="kpi-label">통합 미정·지연</div><div class="kpi-value">2.1억</div></div>
+      </div>
+      <div class="scrim" id="scrim" aria-hidden="true"></div>
+      <aside class="sidebar" id="sidebar" role="dialog" aria-modal="true" aria-label="메인 메뉴" tabindex="-1">
+        <div class="sidebar-header">
+          <div class="sidebar-brand">CRM</div>
+          <span class="sidebar-title">통합 대시보드</span>
+          <button class="sidebar-close" id="closeBtn" aria-label="메뉴 닫기">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">워크스페이스</div>
+          <button class="nav-item active" data-route="dash:it">IT사업부 (통합)</button>
+          <button class="nav-item" data-route="dash:fs">처음서비스</button>
+          <button class="nav-item" data-route="dash:mm">마이메일러</button>
+          <button class="nav-item" data-route="dash:pg">프링고</button>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">운영 관리</div>
+          <button class="nav-item" data-route="collections">수금 미정</button>
+          <button class="nav-item" data-route="rawdata">로우 데이터</button>
+          <button class="nav-item" data-route="sales">영업 대시보드</button>
+        </div>
+      </aside>
+    </div>
+
+    <div class="panel">
+      <h2>4종 닫기 트리거 — 동작 검증</h2>
+      <ul>
+        <li>① 햄버거 ↻ → 토글 (열기/닫기) <span class="badge-ok">OK</span></li>
+        <li>② 메뉴 항목 선택 → 닫힘 + 라우팅 <span class="badge-ok">OK</span></li>
+        <li>③ Scrim(어두운 영역) 탭 → 닫힘 <span class="badge-ok">OK</span></li>
+        <li>④ ESC 키 → 닫힘 <span class="badge-ok">OK</span></li>
+        <li>⑤ X 버튼 → 닫힘 <span class="badge-ok">OK</span></li>
+      </ul>
+      <h2>부가 동작</h2>
+      <ul>
+        <li>본문 scroll-lock <span class="badge-ok">OK</span></li>
+        <li>aria-modal + role="dialog" <span class="badge-ok">OK</span></li>
+        <li>aria-expanded 동기화 <span class="badge-ok">OK</span></li>
+        <li>prefers-reduced-motion 폴백 <span class="badge-ok">OK</span></li>
+        <li>닫힘 시 햄버거 포커스 복귀 <span class="badge-ok">OK</span></li>
+        <li>focus trap (사이드바 내부 순환) <span class="badge-bad">데모 단순화 — 실 구현 시 추가</span></li>
+      </ul>
+      <h2>이벤트 로그</h2>
+      <div class="log" id="log"><div class="log-entry">대기 중…</div></div>
+    </div>
+  </div>
+
+  <script>
+    const phone = document.getElementById('phone');
+    const sidebar = document.getElementById('sidebar');
+    const scrim = document.getElementById('scrim');
+    const body = document.getElementById('body');
+    const hamburger = document.getElementById('hamburger');
+    const closeBtn = document.getElementById('closeBtn');
+    const logEl = document.getElementById('log');
+    const items = sidebar.querySelectorAll('[data-route]');
+    let isOpen = false;
+    let lastFocused = null;
+
+    function log(msg, cls = '') {
+      const e = document.createElement('div');
+      e.className = 'log-entry ' + cls;
+      const t = new Date().toLocaleTimeString('ko-KR');
+      e.textContent = `[${t}] ${msg}`;
+      logEl.prepend(e);
+    }
+
+    function open() {
+      if (isOpen) return;
+      isOpen = true;
+      lastFocused = document.activeElement;
+      sidebar.classList.add('open');
+      scrim.classList.add('visible');
+      body.classList.add('locked');
+      hamburger.setAttribute('aria-expanded', 'true');
+      sidebar.focus();
+      log('STATE → open', 'state');
+    }
+    function close(reason) {
+      if (!isOpen) return;
+      isOpen = false;
+      sidebar.classList.remove('open');
+      scrim.classList.remove('visible');
+      body.classList.remove('locked');
+      hamburger.setAttribute('aria-expanded', 'false');
+      if (lastFocused) lastFocused.focus();
+      log(`STATE → closed (${reason})`, 'state');
+    }
+    function toggle() { isOpen ? close('hamburger-toggle') : open(); }
+
+    hamburger.addEventListener('click', () => {
+      log('TRIGGER ① hamburger', 'trigger');
+      toggle();
+    });
+    scrim.addEventListener('click', () => {
+      log('TRIGGER ③ scrim tap', 'trigger');
+      close('scrim');
+    });
+    closeBtn.addEventListener('click', () => {
+      log('TRIGGER ⑤ X close button', 'trigger');
+      close('x-button');
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        log('TRIGGER ④ ESC', 'trigger');
+        close('escape');
+      }
+    });
+    items.forEach(it => it.addEventListener('click', () => {
+      log(`TRIGGER ② menu select → ${it.dataset.route}`, 'trigger');
+      items.forEach(x => x.classList.remove('active'));
+      it.classList.add('active');
+      close('menu-select');
+    }));
+
+    // reduced-motion 표시
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      log('reduced-motion: ON (애니메이션 비활성)', 'state');
+    } else {
+      log('reduced-motion: OFF', 'state');
+    }
+  </script>
+</body>
+</html>
