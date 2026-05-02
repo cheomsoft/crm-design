@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P-I18N 다국어 텍스트 관리 — 와이어프레임</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #F7F8FB;        --card: #FFFFFF;       --border: #E5E7EB;
+      --text: #0F172A;      --text-2: #334155;     --text-3: #64748B;
+      --blue: #2563EB;      --blue-soft: #EFF4FF;  --blue-strong: #1D4ED8;
+      --green: #16A34A;     --green-soft: #F0FDF4;
+      --red: #DC2626;       --red-soft: #FEF2F2;
+      --amber: #D97706;     --amber-soft: #FFFBEB;
+      --sidebar-bg: #0F172A;     --sidebar-text: #E2E8F0;
+      --sidebar-active: #1E293B; --sidebar-accent: #3B82F6;
+      --skeleton-base: #E5E7EB;  --skeleton-highlight: #F1F5F9;
+      --radius-sm: 6px; --radius: 8px; --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
+      --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+      --duration-base: 200ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    :root[data-theme="dark"] {
+      --bg: #0B1220;        --card: #1E293B;       --border: #334155;
+      --text: #F1F5F9;      --text-2: #CBD5E1;     --text-3: #94A3B8;
+      --blue: #3B82F6;      --blue-soft: rgba(59,130,246,0.18); --blue-strong: #60A5FA;
+      --green: #22C55E;     --green-soft: rgba(34,197,94,0.18);
+      --red: #EF4444;       --red-soft: rgba(239,68,68,0.18);
+      --amber: #F59E0B;     --amber-soft: rgba(245,158,11,0.18);
+      --skeleton-base: #1E293B;  --skeleton-highlight: #334155;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0B1220; --card: #1E293B; --border: #334155;
+        --text: #F1F5F9; --text-2: #CBD5E1; --text-3: #94A3B8;
+        --blue: #3B82F6; --blue-soft: rgba(59,130,246,0.18); --blue-strong: #60A5FA;
+        --green: #22C55E; --green-soft: rgba(34,197,94,0.18);
+        --red: #EF4444; --red-soft: rgba(239,68,68,0.18);
+        --amber: #F59E0B; --amber-soft: rgba(245,158,11,0.18);
+        --skeleton-base: #1E293B; --skeleton-highlight: #334155;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      font-feature-settings: 'tnum';
+      transition: background var(--duration-base) var(--ease-out), color var(--duration-base) var(--ease-out);
+    }
+
+    /* Layout */
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-brand {
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid #1F2937;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-brand-mark {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+      display: grid; place-items: center;
+      color: white; font-weight: 700; font-size: 11px;
+    }
+    .brand-name { font-size: 13px; font-weight: 700; color: white; }
+    .nav { padding: 12px 6px; flex: 1; }
+    .nav-section-title {
+      font-size: 10.5px; font-weight: 600;
+      color: #94A3B8; padding: 8px 12px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      margin: 1px 4px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: var(--sidebar-text);
+      cursor: pointer;
+      border: none; background: transparent;
+      width: calc(100% - 8px);
+      text-align: left;
+    }
+    .nav-item:hover { background: #1F2937; }
+    .nav-item.active { background: var(--sidebar-active); color: white; font-weight: 600; }
+
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .topbar {
+      height: 56px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .breadcrumb { color: var(--text-3); font-size: 13px; }
+    .breadcrumb .sep { margin: 0 6px; color: var(--text-3); }
+    .breadcrumb .current { color: var(--text); font-weight: 600; }
+
+    .lang-switcher, .theme-toggle {
+      display: inline-flex;
+      gap: 2px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2px;
+      background: var(--card);
+    }
+    .lang-btn, .theme-btn {
+      background: none; border: none;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-3);
+      cursor: pointer;
+      border-radius: 5px;
+      font-family: inherit;
+    }
+    .theme-btn { width: 28px; padding: 5px; display: grid; place-items: center; }
+    .lang-btn.active, .theme-btn.active { background: var(--blue-soft); color: var(--blue); }
+
+    .content { padding: 24px; flex: 1; }
+
+    /* Page header */
+    .page-head {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 16px;
+    }
+    .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
+    .page-sub { font-size: 13px; color: var(--text-3); margin: 0; }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-card.blue { border-left: 2px solid var(--blue); }
+    .stat-card.green { border-left: 2px solid var(--green); }
+    .stat-card.amber { border-left: 2px solid var(--amber); }
+    .stat-card.red { border-left: 2px solid var(--red); }
+    .stat-label { font-size: 12px; color: var(--text-3); }
+    .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+    .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex; gap: 8px;
+      padding: 12px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .input, .select {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 13px;
+      background: var(--card);
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+    }
+    .input:focus, .select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+    .input { min-width: 240px; }
+    .toolbar-spacer { flex: 1; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text-2);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn:hover { background: var(--bg); }
+    .btn.primary { background: var(--blue); border-color: var(--blue); color: white; }
+    .btn.primary:hover { background: var(--blue-strong); }
+    .btn.danger { color: var(--red); border-color: var(--red); }
+    .btn.sm { padding: 3px 8px; font-size: 11.5px; }
+
+    .toggle-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text-3);
+    }
+    .toggle-chip.on { background: var(--amber-soft); color: var(--amber); border-color: var(--amber); }
+
+    /* Table */
+    .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    table.data { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+    table.data thead th {
+      background: var(--bg);
+      text-align: left;
+      padding: 10px 14px;
+      font-weight: 600;
+      color: var(--text-2);
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 56px;
+      white-space: nowrap;
+    }
+    table.data tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle;
+    }
+    table.data tbody tr:last-child td { border-bottom: none; }
+    table.data tbody tr:hover td { background: var(--bg); }
+    table.data tbody tr.selected td { background: var(--blue-soft); }
+
+    .key {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      color: var(--blue);
+    }
+    .cell-edit {
+      cursor: text;
+      padding: 4px 6px;
+      margin: -4px -6px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      font: inherit;
+      width: 100%;
+      background: transparent;
+      color: inherit;
+    }
+    .cell-edit:hover { border-color: var(--border); background: var(--bg); }
+    .cell-edit:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: var(--card);
+      box-shadow: 0 0 0 3px var(--blue-soft);
+    }
+    .missing { color: var(--red); font-style: italic; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+    .badge.default { color: var(--text-3); background: var(--bg); border: 1px solid var(--border); }
+    .badge.override { color: var(--blue); background: var(--blue-soft); }
+    .badge.missing { color: var(--red); background: var(--red-soft); }
+    .badge.warn { color: var(--amber); background: var(--amber-soft); }
+
+    /* Footer / pagination */
+    .table-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+    .pagination { display: flex; gap: 4px; }
+    .pagination button {
+      width: 30px; height: 30px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-2);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .pagination button.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+    /* Toast */
+    .toast {
+      position: fixed; top: 70px; right: 24px;
+      background: var(--text);
+      color: var(--card);
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateX(20px);
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(0); }
+
+    /* Notes */
+    .help {
+      background: var(--blue-soft);
+      color: var(--blue);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 12.5px;
+      margin-bottom: 16px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .help .icon { font-size: 16px; }
+
+    /* Responsive */
+    @media (max-width: 980px) {
+      .sidebar { display: none; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .input { min-width: 0; flex: 1; }
+    }
+    @media (max-width: 540px) {
+      .stats { grid-template-columns: 1fr; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-mark">CRM</div>
+        <span class="brand-name">통합 대시보드</span>
+      </div>
+      <nav class="nav">
+        <div class="nav-section-title">워크스페이스</div>
+        <button class="nav-item">IT사업부 (통합)</button>
+        <button class="nav-item">처음서비스</button>
+        <button class="nav-item">마이메일러</button>
+        <button class="nav-item">프링고</button>
+        <div class="nav-section-title" style="margin-top:12px">운영 관리</div>
+        <button class="nav-item">수금 미정</button>
+        <button class="nav-item">로우 데이터</button>
+        <button class="nav-item">영업 대시보드</button>
+        <div class="nav-section-title" style="margin-top:12px">관리자</div>
+        <button class="nav-item">사용자/권한</button>
+        <button class="nav-item">감사 로그</button>
+        <button class="nav-item">알림 센터</button>
+        <button class="nav-item">보고서 빌더</button>
+        <button class="nav-item active">🌐 다국어 텍스트 관리</button>
+      </nav>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="breadcrumb">관리자<span class="sep">›</span><span class="current">다국어 텍스트 관리</span></div>
+        <div class="toolbar-spacer" style="flex:1"></div>
+        <div class="lang-switcher" role="radiogroup" aria-label="언어 선택">
+          <button class="lang-btn active" data-lang="ko" aria-checked="true">한국어</button>
+          <button class="lang-btn" data-lang="en" aria-checked="false">English</button>
+        </div>
+        <div class="theme-toggle" role="radiogroup" aria-label="테마">
+          <button class="theme-btn" data-mode="light" aria-label="라이트">☀</button>
+          <button class="theme-btn active" data-mode="system" aria-label="시스템">⚙</button>
+          <button class="theme-btn" data-mode="dark" aria-label="다크">🌙</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">다국어 텍스트 관리</h1>
+            <p class="page-sub">UI 라벨/메시지의 한국어/영어 텍스트를 운영 중 즉시 편집. 변경 즉시 5분 내 모든 사용자 반영.</p>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn"><span>📥</span> 가져오기</button>
+            <button class="btn"><span>📤</span> 내보내기</button>
+            <button class="btn primary"><span>+</span> 신규 키</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat-card blue">
+            <div class="stat-label">전체 키</div>
+            <div class="stat-value">247</div>
+            <div class="stat-sub">9 namespaces</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">미번역 (EN)</div>
+            <div class="stat-value">14</div>
+            <div class="stat-sub">5.7%</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">덮어쓴 (DB override)</div>
+            <div class="stat-value">23</div>
+            <div class="stat-sub">9.3%</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">변수 누락 경고</div>
+            <div class="stat-value">2</div>
+            <div class="stat-sub">{{name}} 등 보간 검증</div>
+          </div>
+        </div>
+
+        <div class="help">
+          <span class="icon">💡</span>
+          <div>
+            <strong>편집 규약</strong>: 셀을 클릭하면 인라인 편집 가능. 보간 변수 <code>{{name}}</code> 등은 KO/EN 양쪽에 일치해야 함.
+            덮어쓴 텍스트는 ⌫ 버튼으로 JSON 기본값으로 복귀. 모든 변경은 audit_logs에 자동 기록 (감사 로그 메뉴에서 조회).
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input class="input" id="search" placeholder="🔍 키 또는 텍스트 검색 (예: dashboard.kpi)" />
+          <select class="select">
+            <option>네임스페이스: 전체</option>
+            <option>common</option>
+            <option>sidebar</option>
+            <option>topbar</option>
+            <option>dashboard</option>
+            <option>records</option>
+            <option>sales</option>
+            <option>admin</option>
+            <option>status</option>
+            <option>error</option>
+          </select>
+          <span class="toggle-chip" id="missingToggle">⚠️ 미번역만</span>
+          <span class="toggle-chip" id="overrideToggle">📝 덮어쓴 것만</span>
+          <div class="toolbar-spacer"></div>
+          <span style="font-size:12px;color:var(--text-3)" id="selCount">0개 선택됨</span>
+          <button class="btn sm danger" disabled id="bulkDelete">선택 행 ⌫ 복귀</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr>
+                <th style="width:36px"><input type="checkbox" id="selAll" /></th>
+                <th>키</th>
+                <th>한국어</th>
+                <th>English</th>
+                <th>상태</th>
+                <th>변경자</th>
+                <th>변경일</th>
+                <th style="width:80px">동작</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+          <div class="table-footer">
+            <span style="font-size:12px;color:var(--text-3)">전체 247개 중 <strong>1–12</strong> 표시</span>
+            <div class="pagination">
+              <button>‹</button>
+              <button class="active">1</button>
+              <button>2</button>
+              <button>3</button>
+              <button>...</button>
+              <button>21</button>
+              <button>›</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">저장됨</div>
+
+  <script>
+    // 샘플 데이터 12행 — 다양한 상태 시연
+    const ROWS = [
+      { key: 'sidebar.menu.itDept', ko: 'IT사업부 (통합)', en: 'IT Division (Consolidated)', status: 'override', by: '전준명', at: '5분 전' },
+      { key: 'sidebar.menu.collections', ko: '수금 미정', en: 'Collections', status: 'default', by: '-', at: '-' },
+      { key: 'sidebar.menu.rawdata', ko: '로우 데이터', en: 'Raw Data', status: 'default', by: '-', at: '-' },
+      { key: 'dashboard.kpi.collection.thisMonth', ko: '당월 수금', en: 'Collection This Month', status: 'default', by: '-', at: '-' },
+      { key: 'dashboard.kpi.collection.completed', ko: '전월 완료 수금', en: 'Last Month Completed', status: 'override', by: '전준명', at: '2시간 전' },
+      { key: 'dashboard.kpi.collection.delayed', ko: '지연', en: '', status: 'missing', by: '-', at: '-' },
+      { key: 'dashboard.welcome', ko: '안녕하세요, {{name}}님', en: 'Hello, {{name}}', status: 'default', by: '-', at: '-' },
+      { key: 'dashboard.alert.delayed', ko: '{{count}}건 지연', en: '{{count}} delayed', status: 'override', by: 'admin@cheom', at: '어제' },
+      { key: 'dashboard.welcome.broken', ko: '안녕, {{name}}', en: 'Hello!', status: 'warn', by: '전준명', at: '3일 전' },
+      { key: 'status.scheduled', ko: '예정', en: 'Scheduled', status: 'default', by: '-', at: '-' },
+      { key: 'status.completed', ko: '완료', en: 'Completed', status: 'default', by: '-', at: '-' },
+      { key: 'status.delayed', ko: '지연', en: 'Delayed', status: 'default', by: '-', at: '-' },
+    ];
+
+    function badgeHtml(status) {
+      const map = {
+        default: '<span class="badge default">기본</span>',
+        override: '<span class="badge override">📝 덮어씀</span>',
+        missing: '<span class="badge missing">⚠️ 미번역</span>',
+        warn: '<span class="badge warn">⚠ 변수 누락</span>',
+      };
+      return map[status] || '';
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch]));
+    }
+
+    function render() {
+      const rows = document.getElementById('rows');
+      rows.innerHTML = ROWS.map((r, i) => `
+        <tr data-idx="${i}">
+          <td><input type="checkbox" class="row-check" /></td>
+          <td><span class="key">${escapeHtml(r.key)}</span></td>
+          <td><span class="cell-edit" contenteditable="true" data-field="ko">${escapeHtml(r.ko)}</span></td>
+          <td><span class="cell-edit ${r.en ? '' : 'missing'}" contenteditable="true" data-field="en">${r.en ? escapeHtml(r.en) : '— 미번역 —'}</span></td>
+          <td>${badgeHtml(r.status)}</td>
+          <td style="font-size:12px;color:var(--text-3)">${r.by}</td>
+          <td style="font-size:12px;color:var(--text-3)">${r.at}</td>
+          <td style="display:flex;gap:4px">
+            <button class="btn sm" title="변경 이력">📜</button>
+            ${r.status === 'override' ? '<button class="btn sm" title="JSON 기본값 복귀">⌫</button>' : ''}
+          </td>
+        </tr>
+      `).join('');
+      bindCellEdits();
+      bindCheckboxes();
+    }
+
+    function bindCellEdits() {
+      document.querySelectorAll('.cell-edit').forEach(el => {
+        el.addEventListener('blur', e => {
+          const tr = e.target.closest('tr');
+          const idx = +tr.dataset.idx;
+          const field = e.target.dataset.field;
+          const val = e.target.textContent.trim();
+          if (val === ROWS[idx][field]) return;
+          ROWS[idx][field] = val;
+          ROWS[idx].status = 'override';
+          ROWS[idx].by = '전준명';
+          ROWS[idx].at = '방금';
+          render();
+          showToast(`저장됨 — ${ROWS[idx].key} (${field})`);
+        });
+        el.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+          if (e.key === 'Escape') { el.textContent = ROWS[+e.target.closest('tr').dataset.idx][el.dataset.field]; el.blur(); }
+        });
+      });
+    }
+
+    function bindCheckboxes() {
+      const checks = document.querySelectorAll('.row-check');
+      const updateBulk = () => {
+        const n = document.querySelectorAll('.row-check:checked').length;
+        document.getElementById('selCount').textContent = `${n}개 선택됨`;
+        document.getElementById('bulkDelete').disabled = n === 0;
+        document.querySelectorAll('tr[data-idx]').forEach(tr => {
+          const c = tr.querySelector('.row-check');
+          tr.classList.toggle('selected', c.checked);
+        });
+      };
+      checks.forEach(c => c.addEventListener('change', updateBulk));
+      document.getElementById('selAll').addEventListener('change', e => {
+        checks.forEach(c => c.checked = e.target.checked);
+        updateBulk();
+      });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    // 토글 chip
+    document.getElementById('missingToggle').addEventListener('click', e => e.target.classList.toggle('on'));
+    document.getElementById('overrideToggle').addEventListener('click', e => e.target.classList.toggle('on'));
+
+    // theme/lang
+    document.querySelectorAll('.theme-btn').forEach(b => b.addEventListener('click', () => {
+      const m = b.dataset.mode;
+      document.querySelectorAll('.theme-btn').forEach(x => x.classList.toggle('active', x === b));
+      if (m === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', m);
+        localStorage.setItem('theme', m);
+      }
+    }));
+    document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('.lang-btn').forEach(x => x.classList.toggle('active', x === b));
+      showToast(`언어: ${b.dataset.lang.toUpperCase()} (실제 구현 시 페이지 텍스트 전환)`);
+    }));
+
+    render();
+  </script>
+</body>
+</html>
