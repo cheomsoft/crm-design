@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>W-098 Icon — 와이어프레임</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --card: #FFFFFF;
+      --border: #E5E7EB;
+      --text: #0F172A;
+      --text-2: #334155;
+      --text-3: #64748B;
+      --blue: #2563EB;
+      --blue-soft: #EFF4FF;
+      --green: #16A34A;
+      --green-soft: #F0FDF4;
+      --red: #DC2626;
+      --red-soft: #FEF2F2;
+      --amber: #D97706;
+      --amber-soft: #FFFBEB;
+      --radius-lg: 12px;
+      --radius: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .sub { color: var(--text-3); font-size: 13px; margin-bottom: 24px; }
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .section-title { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+    .section-sub { color: var(--text-3); font-size: 12px; margin-bottom: 16px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .icon-cell {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: var(--card);
+      transition: all 0.15s;
+    }
+    .icon-cell:hover { border-color: var(--blue); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .icon-cell svg { display: block; color: var(--text-2); }
+    .icon-name {
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--text-3);
+    }
+    .size-row { display: flex; gap: 24px; align-items: end; flex-wrap: wrap; }
+    .size-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .size-cell svg { color: var(--blue); }
+    .size-label { font-size: 11px; color: var(--text-3); }
+    .tone-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .tone-cell {
+      width: 56px; height: 56px;
+      border-radius: var(--radius);
+      display: grid; place-items: center;
+    }
+    .tone-cell.blue { background: var(--blue-soft); color: var(--blue); }
+    .tone-cell.green { background: var(--green-soft); color: var(--green); }
+    .tone-cell.red { background: var(--red-soft); color: var(--red); }
+    .tone-cell.amber { background: var(--amber-soft); color: var(--amber); }
+    .a11y-row { display: flex; gap: 12px; align-items: center; }
+    .a11y-row code {
+      font-size: 11px;
+      background: #F1F5F9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-2);
+    }
+    .legend {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>W-098 Icon — 와이어프레임</h1>
+  <p class="sub">아이콘 카탈로그 23종. 명세서: <code>docs/10_widgets/W-098_Icon.md</code> · 시안 출처: Feather Icons (MIT) / Lucide (ISC)</p>
+
+  <div class="section">
+    <h2 class="section-title">3.3 카탈로그 23종</h2>
+    <p class="section-sub">size=20, color=currentColor (text-2), strokeWidth=2 — 모든 아이콘 viewBox 24×24</p>
+    <div class="grid" id="catalog"></div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">3.6 size 변형 (반응형 권장)</h2>
+    <p class="section-sub">동일 아이콘(`bell`)을 다양한 size로 렌더 — 호출부에서 size prop으로 제어</p>
+    <div class="size-row" id="sizes"></div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">tone 색상 매핑 (KPICard 헤더 사용 사례)</h2>
+    <p class="section-sub">color prop = `var(--blue)` 등 토큰 변수 직접 전달 가능</p>
+    <div class="tone-row" id="tones"></div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">3.7 접근성 변형</h2>
+    <p class="section-sub">aria-label 유무에 따라 role/aria-hidden 자동 분기</p>
+    <div class="a11y-row" id="a11y"></div>
+    <p class="legend">• 좌: aria-label="검색" → role="img" + aria-label 적용 / 우: aria-label 없음 → aria-hidden="true" 자동 (장식)</p>
+  </div>
+
+  <script>
+    // SVG path 출처: design-bundle/project/icons.jsx (시안)
+    // x, chevron-down 은 Feather Icons 스펙으로 보강 (W-098 §11)
+    const PATHS = {
+      check: '<polyline points="20 6 9 17 4 12"/>',
+      wallet: '<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 12h.01"/>',
+      trend: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+      alert: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+      calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+      search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+      bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+      menu: '<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>',
+      x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+      'chevron-right': '<polyline points="9 18 15 12 9 6"/>',
+      'chevron-down': '<polyline points="6 9 12 15 18 9"/>',
+      download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+      dashboard: '<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>',
+      building: '<rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/>',
+      cog: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+      grid: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+      refresh: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+      filter: '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+      arrow: '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+      back: '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+      external: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+      info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+      msg: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    };
+    const ORDER = ['check','wallet','trend','alert','calendar','search','bell','menu','x','chevron-right','chevron-down','download','dashboard','building','cog','grid','refresh','filter','arrow','back','external','info','msg'];
+
+    function svg(name, size, color) {
+      const p = PATHS[name];
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color||'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+    }
+
+    // 카탈로그 23종
+    document.getElementById('catalog').innerHTML = ORDER.map(n =>
+      `<div class="icon-cell">${svg(n, 20)}<div class="icon-name">${n}</div></div>`
+    ).join('');
+
+    // size 변형
+    document.getElementById('sizes').innerHTML = [14, 16, 18, 20, 24, 32, 48].map(s =>
+      `<div class="size-cell">${svg('bell', s)}<div class="size-label">size=${s}</div></div>`
+    ).join('');
+
+    // tone 매핑 (KPICard 헤더)
+    const tones = [['blue','wallet'],['green','check'],['red','alert'],['amber','calendar']];
+    document.getElementById('tones').innerHTML = tones.map(([t,n]) =>
+      `<div class="tone-cell ${t}">${svg(n, 20)}</div>`
+    ).join('');
+
+    // a11y
+    const search = svg('search', 20);
+    const bell = svg('bell', 20);
+    document.getElementById('a11y').innerHTML = `
+      <div role="img" aria-label="검색" style="display:inline-flex;align-items:center;gap:6px;color:var(--text-2)">${search}<code>aria-label="검색"</code></div>
+      <div aria-hidden="true" style="display:inline-flex;align-items:center;gap:6px;color:var(--text-2)">${bell}<code>aria-hidden="true"</code></div>
+    `;
+  </script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>W-099 Skeleton — 와이어프레임</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --card: #FFFFFF;
+      --border: #E5E7EB;
+      --text: #0F172A;
+      --text-2: #334155;
+      --text-3: #64748B;
+      --blue: #2563EB;
+      --blue-soft: #EFF4FF;
+      --skeleton-base: #E5E7EB;
+      --skeleton-highlight: #F1F5F9;
+      --radius-sm: 6px;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .sub { color: var(--text-3); font-size: 13px; margin-bottom: 24px; }
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .section-title { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+    .section-sub { color: var(--text-3); font-size: 12px; margin-bottom: 16px; }
+    .row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .stack { display: flex; flex-direction: column; gap: 8px; }
+    .label-row { display: flex; flex-direction: column; gap: 6px; }
+    .caption {
+      font-size: 11px;
+      color: var(--text-3);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    /* W-099 Skeleton 핵심 — 명세서 §3 그대로 */
+    .skeleton {
+      display: inline-block;
+      background: linear-gradient(
+        90deg,
+        var(--skeleton-base) 0%,
+        var(--skeleton-highlight) 50%,
+        var(--skeleton-base) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.4s ease-in-out infinite;
+      border-radius: var(--radius-sm);
+    }
+    .skeleton.circle { border-radius: 50%; }
+    .skeleton.text { height: 14px; border-radius: var(--radius-sm); }
+
+    @keyframes skeleton-shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* 모션 감소 폴백 */
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton { animation: none; background: var(--skeleton-base); }
+    }
+
+    /* KPICard 컨텍스트 미리보기 */
+    .kpi-mock {
+      width: 280px;
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--blue);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      background: var(--card);
+      box-shadow: var(--shadow-sm);
+    }
+    .kpi-mock-icon {
+      width: 32px; height: 32px;
+      border-radius: var(--radius);
+      background: var(--blue-soft);
+      margin-left: auto;
+    }
+    .kpi-row { display: flex; align-items: center; }
+
+    /* RecordTable 컨텍스트 미리보기 */
+    .table-mock {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--card);
+    }
+    .table-mock thead th {
+      background: #F8FAFC;
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      border-bottom: 1px solid var(--border);
+    }
+    .table-mock tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #F1F5F9;
+    }
+  </style>
+</head>
+<body>
+  <h1>W-099 Skeleton — 와이어프레임</h1>
+  <p class="sub">로딩 placeholder 3 variants. 명세서: <code>docs/10_widgets/W-099_Skeleton.md</code></p>
+
+  <div class="section">
+    <h2 class="section-title">3.3 Variants — rect / circle / text</h2>
+    <p class="section-sub">3.2 토큰: base=`var(--skeleton-base)`, highlight=`var(--skeleton-highlight)`, shimmer 1.4s ease-in-out</p>
+    <div class="row">
+      <div class="label-row">
+        <div class="skeleton" style="width:160px;height:32px"></div>
+        <div class="caption">rect 160×32 (KPICard 메인 값)</div>
+      </div>
+      <div class="label-row">
+        <div class="skeleton circle" style="width:40px;height:40px"></div>
+        <div class="caption">circle 40 (아이콘/아바타)</div>
+      </div>
+      <div class="label-row">
+        <div class="skeleton text" style="width:80px"></div>
+        <div class="caption">text 80×14 (라벨/캡션)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">3.6 사용 예 — 권장 사이즈</h2>
+    <p class="section-sub">호출부가 width/height를 props로 전달하여 정확한 자리 표시</p>
+    <div class="stack">
+      <div class="label-row">
+        <div class="skeleton" style="width:160px;height:32px"></div>
+        <div class="caption">KPICard 메인 값 — 160×32</div>
+      </div>
+      <div class="label-row">
+        <div class="skeleton text" style="width:80px"></div>
+        <div class="caption">KPICard 라벨 — 80×14 (text variant)</div>
+      </div>
+      <div class="label-row">
+        <div class="skeleton" style="width:100%;height:20px"></div>
+        <div class="caption">RecordTable 행 — 100%×20</div>
+      </div>
+      <div class="label-row">
+        <div class="skeleton" style="width:100%;height:200px"></div>
+        <div class="caption">차트 컨테이너 — 100%×200</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">컨텍스트 미리보기 — KPICard 로딩 상태</h2>
+    <p class="section-sub">W-001 §3.4 Loading 시나리오 — Skeleton 의존 호환 검증</p>
+    <div class="kpi-mock">
+      <div class="kpi-row">
+        <div class="skeleton text" style="width:80px;height:14px"></div>
+        <div class="kpi-mock-icon"></div>
+      </div>
+      <div style="margin-top:12px"><div class="skeleton" style="width:160px;height:32px" data-testid="kpi-skeleton"></div></div>
+      <div style="margin-top:8px"><div class="skeleton text" style="width:60px;height:12px"></div></div>
+    </div>
+    <p class="caption" style="margin-top:8px">data-testid="kpi-skeleton" 적용 — T-W-001 TC-06 호환</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">컨텍스트 미리보기 — RecordTable 로딩 상태</h2>
+    <p class="section-sub">W-030 Loading 상태 — 행 6개 스켈레톤</p>
+    <table class="table-mock">
+      <thead>
+        <tr><th>고객</th><th>항목</th><th>금액</th><th>상태</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">3.4 prefers-reduced-motion 폴백</h2>
+    <p class="section-sub">시스템 환경설정에서 "동작 줄이기"를 켜면 본 영역의 shimmer 애니메이션이 제거되고 단색 base 만 표시됨 (현재 브라우저 설정: <span id="reduced">감지중...</span>)</p>
+    <div class="skeleton" style="width:280px;height:20px"></div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">3.7 접근성</h2>
+    <p class="section-sub">role="status" + aria-label="로딩 중" 기본 — 부모가 aria-busy=true 인 경우 중복 회피</p>
+    <div class="row">
+      <div role="status" aria-label="로딩 중" class="skeleton" style="width:200px;height:24px"></div>
+      <span class="caption">role="status" aria-label="로딩 중"</span>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('rows').innerHTML = Array.from({length:6}).map((_,i) => `
+      <tr>
+        <td><div class="skeleton text" style="width:${80+i*8}px"></div></td>
+        <td><div class="skeleton text" style="width:60px"></div></td>
+        <td><div class="skeleton text" style="width:80px"></div></td>
+        <td><div class="skeleton" style="width:50px;height:18px;border-radius:999px"></div></td>
+      </tr>
+    `).join('');
+    document.getElementById('reduced').textContent =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduce (애니메이션 OFF)' : 'no-preference (애니메이션 ON)';
+  </script>
+</body>
+</html>

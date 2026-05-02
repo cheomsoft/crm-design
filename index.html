@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>처음소프트 CRM v2 — 디자인 컴펌</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --card: #FFFFFF;
+      --border: #E5E7EB;
+      --text: #0F172A;
+      --text-2: #334155;
+      --text-3: #64748B;
+      --blue: #2563EB;
+      --blue-soft: #EFF4FF;
+      --blue-strong: #1D4ED8;
+      --green: #16A34A;
+      --amber: #D97706;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
+      --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 48px 32px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .container { max-width: 1080px; margin: 0 auto; }
+    header { margin-bottom: 32px; }
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin: 0 0 8px;
+    }
+    .sub { color: var(--text-3); font-size: 15px; }
+    .meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    a.card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    a.card:hover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .card-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--radius);
+      display: grid; place-items: center;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .card.prototype .card-icon { background: var(--blue-soft); color: var(--blue); }
+    .card.wireframe .card-icon { background: #F0FDF4; color: var(--green); }
+    .card.spec .card-icon { background: #FFFBEB; color: var(--amber); }
+    .card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+    .card-desc { color: var(--text-3); font-size: 13px; }
+    .card-link { color: var(--blue); font-size: 12px; font-weight: 500; margin-top: auto; }
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      color: var(--text-3);
+      font-size: 12px;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="meta">⚙ 디자인 컴펌 단계</span>
+      <h1>처음소프트 CRM v2</h1>
+      <p class="sub">코딩 전 디자인 UI/UX 시각 컴펌용 미리보기. 모든 자산은 정적 HTML이며 실 데이터는 포함하지 않습니다.</p>
+    </header>
+
+    <div class="grid">
+      <a class="card prototype" href="./prototype/CRM%20Dashboard.html">
+        <div class="card-icon">🖥</div>
+        <div class="card-title">통합 대시보드 프로토타입</div>
+        <div class="card-desc">
+          전체 화면 동작 데모. IT 통합/사업부별 대시보드, 수금 미정, 로우 데이터, 영업, 보고서, 사용자/권한, 감사 로그, 알림 센터 — 한국어 샘플 데이터 + Chart.js + 인라인 편집 + 드릴다운 + 모바일 반응형.
+        </div>
+        <div class="card-link">→ 프로토타입 열기</div>
+      </a>
+
+      <a class="card wireframe" href="./wireframes/W-098_Icon.html">
+        <div class="card-icon">🎨</div>
+        <div class="card-title">W-098 Icon — 카탈로그</div>
+        <div class="card-desc">
+          23종 아이콘 카탈로그. size 변형 (14~48px), tone 매핑 (KPICard 헤더), 접근성 분기 (aria-label vs aria-hidden).
+        </div>
+        <div class="card-link">→ Icon 와이어프레임</div>
+      </a>
+
+      <a class="card wireframe" href="./wireframes/W-099_Skeleton.html">
+        <div class="card-icon">⏳</div>
+        <div class="card-title">W-099 Skeleton — 로딩</div>
+        <div class="card-desc">
+          3 variants (rect/circle/text), KPICard·RecordTable 컨텍스트, prefers-reduced-motion 폴백, role="status" 접근성.
+        </div>
+        <div class="card-link">→ Skeleton 와이어프레임</div>
+      </a>
+    </div>
+
+    <footer>
+      <p>📋 디자인/명세 SoT: <code>docs/00_architecture/04_DESIGN_TOKENS.md</code> · 도메인 룰: <code>.docs/memory/domain-rules.md</code></p>
+      <p>🔧 본 사이트는 GitHub Actions로 main push 시 자동 배포됩니다. 와이어프레임/프로토타입 변경 즉시 반영.</p>
+    </footer>
+  </div>
+</body>
+</html>
